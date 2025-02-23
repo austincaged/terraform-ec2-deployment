@@ -1,0 +1,76 @@
+---
+- name: Bootstrap Python 3.8 on Amazon Linux 2
+  hosts: all
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: Install Python 3.8 via Amazon Extras
+      raw: |
+        sudo amazon-linux-extras enable -y python3.8 && \
+        sudo yum clean all && \
+        sudo yum install -y python3.8
+
+- name: Main playbook (Docker setup and container deployment)
+  hosts: all
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3.8
+
+  tasks:
+    - name: Clean yum metadata
+      command: yum clean all
+
+    - name: Update yum cache
+      command: yum makecache
+
+    - name: Install Docker via direct command
+      command: yum install -y docker
+
+    # ADD THIS NEW TASK HERE (after Docker installation, before starting Docker)
+    - name: Configure Docker to manage iptables
+      copy:
+        dest: /etc/docker/daemon.json
+        content: |
+          {
+            "iptables": true
+          }
+        mode: 0644
+      notify: Restart Docker
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        state: restarted
+        enabled: yes
+
+    - name: Install Python 3 pip via direct command
+      command: yum install -y python3-pip
+
+    - name: Install Docker SDK for Python
+      pip:
+        name:
+          - "docker>=6.0.0,<7.0.0"
+          - "urllib3<2.0.0"
+          - "requests<=2.28.1"
+        executable: pip3.8
+
+    - name: Add ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+
+    - name: Deploy Docker container
+      docker_container:
+        name: webapp
+        image: "nginx:latest"
+        ports:
+          - "80:80/tcp"
+        restart_policy: always
+
+  # ADD THIS HANDLERS SECTION AT THE END OF THE PLAY
+  handlers:
+    - name: Restart Docker
+      systemd:
+        name: docker
+        state: restarted
