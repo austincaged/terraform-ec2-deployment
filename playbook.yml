@@ -62,7 +62,7 @@
 
     - name: Deploy Docker container
       docker_container:
-        name: webapp
+        name: mywebapp
         image: "nginx:latest"
         ports:
           - "80:80/tcp"
