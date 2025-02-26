@@ -4,20 +4,52 @@ provider "aws" {
 }
 
 resource "aws_instance" "web" {
-  ami           = "ami-0003ba2a7a89ddb0c" # Ubuntu 22.04 LTS
+  ami           = "ami-0003ba2a7a89ddb0c" # Amazon Linux 2
   instance_type = "t2.micro"
-  key_name      = "linux2"  # Replace with your AWS key pair name
-  
+  key_name      = "linux3"
   vpc_security_group_ids = [aws_security_group.web_sg.id]
+  depends_on    = [aws_security_group.web_sg]
+
+  connection {
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = file("~/Downloads/linux3.pem")
+    host        = self.public_ip
+    timeout     = "2m"
+  }
+
+  user_data = <<-EOF
+              #!/bin/bash
+              set -ex
+              sudo yum update -y
+              sudo yum install httpd -y || (echo "Install failed"; exit 1)
+              sudo mkdir -p /var/www/html
+              sudo systemctl start httpd
+              sudo systemctl enable httpd
+              EOF
+
+  provisioner "file" {
+    source      = "index.html"
+    destination = "/home/ec2-user/index.html"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "until [ -d /var/www/html ]; do sleep 2; echo 'Waiting for Apache install...'; done",
+      "sudo mv /home/ec2-user/index.html /var/www/html/index.html",
+      "sudo chmod 644 /var/www/html/index.html",
+      "sudo systemctl restart httpd || echo 'Httpd restart failed'"
+    ]
+  }
 
   tags = {
-    Name = "linux-server"
+    Name = "auto-web-server"
   }
 }
 
 resource "aws_security_group" "web_sg" {
-  name = "web-sg10"
-  description = "Allow HTTP and SSH traffic"  # Add this line
+  name        = "web-sg11"
+  description = "Allow HTTP and SSH traffic"
   vpc_id      = "vpc-04447e0873377df96"
 
   ingress {
