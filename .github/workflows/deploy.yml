@@ -1,0 +1,60 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  terraform:
+    name: "Terraform"
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::043309352345:role/terraform-deployment-github-actions-role
+          aws-region: eu-west-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
+      - name: Create SSH directory
+        run: mkdir -p ~/.ssh
+
+      - name: Add SSH Private Key
+        run: echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+      - name: Set SSH Key Permissions
+        run: chmod 400 ~/.ssh/id_rsa
+
+      - name: SSH into EC2 and Deploy
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /path/to/your/app  # Change to your project directory
+            git pull origin main  # Pull latest code
+            docker-compose down  # Stop existing containers
+            docker-compose up -d  # Restart with new changes
+            cd /home/docker/terraform-ec2-deployment  # Your actual path
+            git pull origin main
+            docker-compose down
+            docker-compose up -d
