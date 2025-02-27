@@ -13,7 +13,7 @@ resource "aws_instance" "web" {
   connection {
     type        = "ssh"
     user        = "ec2-user"
-    private_key = file("${abspath(path.root)}/linux3.pem")  # Updated path
+    private_key = file("/home/runner/work/terraform-ec2-deployment/terraform-ec2-deployment/linux3.pem")  # Updated path
     host        = self.public_ip
     timeout     = "2m"
   }
@@ -48,7 +48,7 @@ resource "aws_instance" "web" {
 }
 
 resource "aws_security_group" "web_sg" {
-  name        = "web-sg12"
+  name        = "web-sg13"
   description = "Allow HTTP and SSH traffic"
   vpc_id      = "vpc-04447e0873377df96"
 
