@@ -48,7 +48,7 @@ resource "aws_instance" "web" {
 }
 
 resource "aws_security_group" "web_sg" {
-  name        = "web-sg13"
+  name        = "web-sg14"
   description = "Allow HTTP and SSH traffic"
   vpc_id      = "vpc-04447e0873377df96"
 
