@@ -10,13 +10,6 @@ resource "aws_instance" "web" {
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   depends_on    = [aws_security_group.web_sg]
 
-  connection {
-    type        = "ssh"
-    user        = "ec2-user"
-    private_key = file("/home/runner/work/terraform-ec2-deployment/terraform-ec2-deployment/linux3.pem")  # Updated path
-    host        = self.public_ip
-    timeout     = "2m"
-  }
 
   user_data = <<-EOF
               #!/bin/bash
@@ -28,19 +21,6 @@ resource "aws_instance" "web" {
               sudo systemctl enable httpd
               EOF
 
-  provisioner "file" {
-    source      = "index.html"
-    destination = "/home/ec2-user/index.html"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "until [ -d /var/www/html ]; do sleep 2; echo 'Waiting for Apache install...'; done",
-      "sudo mv /home/ec2-user/index.html /var/www/html/index.html",
-      "sudo chmod 644 /var/www/html/index.html",
-      "sudo systemctl restart httpd || echo 'Httpd restart failed'"
-    ]
-  }
 
   tags = {
     Name = "auto-web-server"
@@ -48,7 +28,7 @@ resource "aws_instance" "web" {
 }
 
 resource "aws_security_group" "web_sg" {
-  name        = "web-sg14"
+  name        = "web-sg16"
   description = "Allow HTTP and SSH traffic"
   vpc_id      = "vpc-04447e0873377df96"
 
