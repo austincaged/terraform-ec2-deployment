@@ -7,3 +7,5 @@ terraform.tfvars
 *.tfstate
 *.tfstate.backup
 terraform.tfvars
+*.pem
+.terraform.lock.hcl

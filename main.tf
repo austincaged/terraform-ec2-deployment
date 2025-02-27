@@ -13,7 +13,7 @@ resource "aws_instance" "web" {
   connection {
     type        = "ssh"
     user        = "ec2-user"
-    private_key = file("~/Downloads/linux3.pem")
+    private_key = file("${path.module}/linux3.pem")  # Updated path
     host        = self.public_ip
     timeout     = "2m"
   }
