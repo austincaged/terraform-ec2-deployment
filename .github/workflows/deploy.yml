@@ -31,29 +31,14 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve
 
-      - name: Create SSH directory
-        run: mkdir -p ~/.ssh
-
-      - name: Add SSH Private Key
-        run: echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-
-      - name: Set SSH Key Permissions
-        run: chmod 400 ~/.ssh/id_rsa
-
-      - name: SSH into EC2 and Deploy
-
+      # SSH Deployment Section
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.5
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          host: ${{ secrets.EC2_HOST }}  # Use same secret name as before
+          username: ${{ secrets.EC2_USER }}  # Keep consistent naming
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          port: 22
           script: |
-            cd /path/to/your/app  # Change to your project directory
-            git pull origin main  # Pull latest code
-            docker-compose down  # Stop existing containers
-            docker-compose up -d  # Restart with new changes
             cd /home/docker/terraform-ec2-deployment  # Your actual path
             git pull origin main
             docker-compose down
