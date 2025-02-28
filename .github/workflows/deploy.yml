@@ -36,7 +36,8 @@ jobs:
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.EC2_HOST }}  # Use same secret name as before
-          username: ${{ secrets.EC2_USER }}  # Keep consistent naming
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}# Keep consistent naming
           
           script: |
             cd /home/docker/terraform-ec2-deployment  # Your actual path
