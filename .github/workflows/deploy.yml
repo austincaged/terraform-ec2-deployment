@@ -37,7 +37,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}  # Use same secret name as before
           username: ${{ secrets.EC2_USER }}  # Keep consistent naming
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          
           script: |
             cd /home/docker/terraform-ec2-deployment  # Your actual path
             git pull origin main
