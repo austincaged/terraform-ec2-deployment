@@ -25,9 +25,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Terraform Destroy
-        run: terraform destroy -auto-approve
-
       - name: Terraform Apply
         run: terraform apply -auto-approve
 
